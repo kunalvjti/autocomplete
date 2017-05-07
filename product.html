@@ -6,22 +6,35 @@
   <title>Product name Autocomplete</title>
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  
 </head>
 <body>
  
  <form>
   <fieldset>
-    <label for="target">Search for your Product:</label>
+    <label for="target">Product Name:</label>
     <input id="target" type="text">
   </fieldset>
 </form>
 
-<script src="pubsubClient.js"></script>
 <script>
-$( "#target" ).keypress(function( event ) {
-  console.log( "Handler for .keypress() called." );
-  publishMessage(event.which);
+$('#target').on("input", function() {
+  var dInput = this.value;
+  console.log( "Handler for input event invoked. dInput = " + dInput);
+  //publishMessage(event.which);
+  $.ajax({
+        type: 'POST',
+        url: 'http://localhost:8080/data',
+        data: { 
+          "data1": dInput
+        },
+        dataType: 'text',    
+        success: function (response) {
+          alert(response);
+        },
+        error: function () {
+          alert("error");
+        }
+    });
 });
 </script>
 
