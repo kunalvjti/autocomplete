@@ -1,0 +1,105 @@
+<html>
+
+   <head>
+
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+     <title>My site title</title>
+
+     <style type="text/css">
+     
+@import url(http://fonts.googleapis.com/css?family=Montserrat+Alternates);
+
+* {
+    margin:0;
+    padding:0;
+    font:12pt Arial;
+}
+
+body {
+  background-color:#34495e;
+}
+
+.field {
+  display:flex;
+  position:realtive;
+  margin:5em auto;
+  width:70%;
+  flex-direction:row;
+  box-shadow:
+   1px 1px 0 rgb(22, 160, 133),
+   2px 2px 0 rgb(22, 160, 133),
+   3px 3px 0 rgb(22, 160, 133),
+   4px 4px 0 rgb(22, 160, 133),
+   5px 5px 0 rgb(22, 160, 133),
+   6px 6px 0 rgb(22, 160, 133),
+   7px 7px 0 rgb(22, 160, 133)
+  ;
+}
+
+.field>input[type=text],
+.field>button {
+  display:block;
+  font:1.2em 'Montserrat Alternates';
+}
+
+.field>input[type=text] {
+  flex:1;
+  padding:0.6em;
+  border:0.2em solid rgb(26, 188, 156);
+}
+
+.field>button {
+  padding:0.6em 0.8em;
+  background-color:rgb(26, 188, 156);
+  color:white;
+  border:none;
+}
+
+</style>
+
+  </head>
+
+  <body>
+
+<div class="field" id="searchform">
+  <input type="text" id="searchterm" placeholder="Enter product name" />
+  <button type="button" id="search">Find!</button>
+</div>
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script>
+$('#searchterm').on("input", function() {
+  var dInput = this.value;  
+  console.log( "Handler for input event invoked. dInput = " + dInput);
+  $.ajax({
+        type: 'POST',
+        url: 'http://localhost:8080/data',
+        data: { 
+          "data1": dInput
+        },
+        dataType: 'text',    
+        success: function (response) {
+          console.log(response);
+          // availableTags needs to be replaced with response once i have the right query
+          var availableTags = [
+            "Duracell - AAA Batteries (4-Pack)",
+            "Duracell - AA 1.5V CopperTop Batteries (4-Pack)",
+            "Duracell - AA Batteries (8-Pack)"
+          ];
+          $( "#searchterm" ).autocomplete({
+            source: availableTags
+          });
+        },
+        error: function () {
+          alert("Error Happened!");
+        }
+    }); 
+
+});
+</script>
+
+  </body>
+</html>

@@ -9,32 +9,42 @@
 </head>
 <body>
  
- <form>
-  <fieldset>
-    <label for="target">Product Name:</label>
-    <input id="target" type="text">
-  </fieldset>
-</form>
+ <div class="ui-widget">
+  <label for="tags">Product Name: </label>
+  <input id="tags">
+</div>
 
 <script>
-$('#target').on("input", function() {
-  var dInput = this.value;
+$("#tags").position({
+    my: 'top', at: 'top+150'
+});
+$('#tags').on("input", function() {
+  var dInput = this.value;  
   console.log( "Handler for input event invoked. dInput = " + dInput);
-  //publishMessage(event.which);
   $.ajax({
         type: 'POST',
-        url: 'http://localhost:8080/data',
+        url: 'http://autocomplete-166617.appspot.com:8080/data',
         data: { 
           "data1": dInput
         },
         dataType: 'text',    
         success: function (response) {
-          alert(response);
+          console.log(response);
+          // availableTags needs to be replaced with response once i have the right query
+          var availableTags = [
+            "Duracell - AAA Batteries (4-Pack)",
+            "Duracell - AA 1.5V CopperTop Batteries (4-Pack)",
+            "Duracell - AA Batteries (8-Pack)"
+          ];
+          $( "#tags" ).autocomplete({
+            source: availableTags
+          });
         },
         error: function () {
-          alert("error");
+          alert("Error Happened!");
         }
-    });
+    }); 
+
 });
 </script>
 
