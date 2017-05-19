@@ -4,7 +4,7 @@
 
      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-     <title>My site title</title>
+     <title>Autocomplete Demo</title>
 
      <style type="text/css">
      
@@ -82,13 +82,7 @@ $("#searchterm").autocomplete({
                 alert('Error: ' + xhr.responseText);
             },
             success: function (data) {
-                //console.log(data);
-                response($.map(data, function (item) {
-                    console.log(item.ProductName);
-                    return {
-                        value: item.ProductName
-                    }
-                }));
+                response( data );
             }
         });
     }

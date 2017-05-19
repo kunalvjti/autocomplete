@@ -1,1 +1,0 @@
-/usr/local/mysql/bin/mysqlimport -v -u root -h 127.0.0.1 -p --local guestbook --lines-terminated-by='\r' products.csv
