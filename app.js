@@ -9,27 +9,14 @@ const path = require('path');
 const memjs = require('memjs');
 
 // Imports the Google Cloud client library
-const Spanner = require('@google-cloud/spanner');
+const Datastore = require('@google-cloud/datastore');
 // Your Google Cloud Platform project ID
-const projectId = 'autocomplete-166617';
+const projectId = 'gstore-autocomplete';
 
-// Instantiates a client
-const spanner = Spanner({
+// Instantiates a Datastore client
+const datastore = Datastore({
   projectId: projectId
 });
-
-// Your Cloud Spanner instance ID
-const instanceId = 'test-instance';
-
-// Your Cloud Spanner database ID
-const databaseId = 'example-db';
-
-// Gets a reference to a Spanner instance and database
-const instance = spanner.instance(instanceId);
-const database = instance.database(databaseId);
-
-// Instantiate Spanner table objects
-const productTable = database.table('Products');
 
 app.use(expressLogging(logger));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -49,6 +36,22 @@ app.listen(PORT, () => {
    console.log('Press Ctrl+C to quit.');
 });
 
+function nextChar(c) {
+    return String.fromCharCode(c.charCodeAt(0) + 1);
+}
+
+function find_end(start) {
+    var lchar = start.slice(-1);
+    //console.log("Last char = " + lchar);
+    var rchars = start.slice(0, -1);
+    //console.log("Rchars = " + rchars);
+    var nchar = nextChar(lchar);
+    //console.log("Next char to last = " + nchar);
+    var end = rchars.concat(nchar);
+    //console.log("End = " + end);
+    return end;
+}
+
 app.get('/', function(req, res) {   
     res.sendFile(path.join(__dirname+'/search.html'));
 });
@@ -57,6 +60,9 @@ app.post('/data', function(req, res) {
 	  var data = req.body.term;
     console.log("Data received from keypress = " + data);
 
+    var start = data;
+    var end = find_end(start);
+ 
     // Check in Memcache if this key exists
     mc.get(data, (err, value) => {
       if (err) {
@@ -64,34 +70,36 @@ app.post('/data', function(req, res) {
         return;
       }
       if (value) {
-        var results = value.toString().split(',');
-        console.log("Key found in memcached. Returning value = " + results);
+        var results = JSON.parse(value);
+        console.log("Key found in memcached. Sending result directly to the client");
         res.status(200).send(results).end();
         return;
       }
 
-      var query = `SELECT * FROM Products WHERE ProductName LIKE '` + data + `%';`;
-      console.log("Query string = " + query);
       var matching_products = [];
-      database.run(query)
+      const query = datastore.createQuery('Products51646')
+        .filter('name', '>=', data)
+        .filter('name', '<', end);
+
+      console.log("Key not found in memcached. Sending query to Datastore");
+      datastore.runQuery(query)
         .then((results) => {
-          const rows = results[0];
-          rows.forEach((row) => {
-            const json = row.toJSON();
-            console.log(`ProductId: ${json.ProductId.value}, ProductName: ${json.ProductName}`);
-            matching_products.push(json.ProductName);
+          // Task entities found.
+          const tasks = results[0];
+
+          tasks.forEach((task) => {
+            matching_products.push(task.name);
           });
-          console.log(matching_products);
-          // Add to memcached
-          mc.set(data, matching_products.toString(), {expires:600}, (err) => {
+          //console.log(JSON.stringify(matching_products));
+
+          mc.set(data, JSON.stringify(matching_products), {expires:600}, (err) => {
             if (err) {
               next(err);
-              //res.status(500).send("Error storing data into memcached").end();
               return;
             }
-            // Send response back to the client
-            res.status(200).send(matching_products).end();
-          });         
+          });
+          // Send response back to the client
+          res.status(200).send(matching_products).end();  
         });
     });      		
 });
