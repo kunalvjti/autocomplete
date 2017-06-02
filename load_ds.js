@@ -3,11 +3,10 @@ const fs = require("fs");
 // Instantiates a Datastore client
 var datastore = require('@google-cloud/datastore')({
   projectId: 'gstore-autocomplete',
-  //keyFilename: '/Users/kunalpariani/Downloads/gstore-autocomplete-d57bf3c5d333.json'
 });
 
 // The kind for the Datastore entity
-const kind = 'Products51646';
+const kind = 'Products';
 var task = [];
 var taskKey = [];
 //Parse the JSON
@@ -39,7 +38,6 @@ lineReader.on('line', function (line) {
 
 function processRecord(record) {
     //console.log('Record name = ' + record.name);
-    // The Cloud Datastore key for the new entity
     console.log('Record sku = ' + record.sku);
     taskKey[i] = datastore.key([kind, record.sku]);
     // Prepares the new entity

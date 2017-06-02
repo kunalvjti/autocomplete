@@ -1,15 +1,14 @@
 const express = require('express');
 const bodyParser = require("body-parser");
-const app = express();
-
 const expressLogging = require('express-logging');
 const logger = require('logops');
- 
 const path = require('path');
 const memjs = require('memjs');
-
 // Imports the Google Cloud client library
 const Datastore = require('@google-cloud/datastore');
+
+const app = express();
+
 // Your Google Cloud Platform project ID
 const projectId = 'gstore-autocomplete';
 
@@ -44,12 +43,10 @@ function find_end(start) {
     var lchar = start.slice(-1);
     //console.log("Last char = " + lchar);
     var rchars = start.slice(0, -1);
-    //console.log("Rchars = " + rchars);
+    //console.log("Rchars = " + rchars);  
     var nchar = nextChar(lchar);
     //console.log("Next char to last = " + nchar);
-    var end = rchars.concat(nchar);
-    //console.log("End = " + end);
-    return end;
+    return rchars.concat(nchar);
 }
 
 app.get('/', function(req, res) {   
@@ -63,6 +60,8 @@ app.post('/data', function(req, res) {
     var start = data;
     var end = find_end(start);
  
+    console.log("End = " + data);
+
     // Check in Memcache if this key exists
     mc.get(data, (err, value) => {
       if (err) {
@@ -77,7 +76,7 @@ app.post('/data', function(req, res) {
       }
 
       var matching_products = [];
-      const query = datastore.createQuery('Products51646')
+      const query = datastore.createQuery('Products')
         .filter('name', '>=', data)
         .filter('name', '<', end);
 
@@ -90,7 +89,6 @@ app.post('/data', function(req, res) {
           tasks.forEach((task) => {
             matching_products.push(task.name);
           });
-          //console.log(JSON.stringify(matching_products));
 
           mc.set(data, JSON.stringify(matching_products), {expires:600}, (err) => {
             if (err) {
