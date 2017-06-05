@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require("body-parser");
-const expressLogging = require('express-logging');
-const logger = require('logops');
+//const expressLogging = require('express-logging');
+//const logger = require('logops');
 const path = require('path');
 const memjs = require('memjs');
 // Imports the Google Cloud client library
@@ -17,7 +17,7 @@ const datastore = Datastore({
   projectId: projectId
 });
 
-app.use(expressLogging(logger));
+//app.use(expressLogging(logger));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.text());
 
@@ -60,7 +60,7 @@ app.post('/data', function(req, res) {
     var start = data;
     var end = find_end(start);
  
-    console.log("End = " + data);
+    //console.log("End = " + end);
 
     // Check in Memcache if this key exists
     mc.get(data, (err, value) => {
@@ -77,10 +77,11 @@ app.post('/data', function(req, res) {
 
       var matching_products = [];
       const query = datastore.createQuery('Products')
-        .filter('name', '>=', data)
+        .filter('name', '>=', start)
         .filter('name', '<', end);
 
-      console.log("Key not found in memcached. Sending query to Datastore");
+      console.log("Key not found in memcached"); 
+      console.log("Sending query: SELECT * from Products where name >= '" + start + "' and name < '" + end + "' to Datastore");
       datastore.runQuery(query)
         .then((results) => {
           // Task entities found.
